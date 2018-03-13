@@ -54,9 +54,9 @@ namespace Svelto.ECS.Internal
                                       EntityInfoView                  removeEntityView)
         {
             ITypeSafeList list;
-
-            if (entityViewsByType.TryGetValue(typeof(EntityInfoView), out list) == false)
-                list = entityViewsByType[typeof(EntityInfoView)] =
+             
+            if (entityViewsByType.TryGetValue(_entityInfoView, out list) == false)
+                list = entityViewsByType[_entityInfoView] =
                            new TypeSafeFasterListForECSForClasses<EntityInfoView>();
 
             (list as TypeSafeFasterListForECSForClasses<EntityInfoView>).Add(removeEntityView);
@@ -64,10 +64,9 @@ namespace Svelto.ECS.Internal
 
         static void InternalBuildEntityViews(int                             entityID,
                                              Dictionary<Type, ITypeSafeList> entityViewsByType,
-                                             IEntityDescriptorInfo           eentityViewsToBuildDescriptor,
+                                             EntityDescriptorInfo            entityViewsToBuildDescriptor,
                                              object[]                        implementors)
         {
-            var entityViewsToBuildDescriptor = eentityViewsToBuildDescriptor as EntityDescriptorInfo;
             var entityViewsToBuild           = entityViewsToBuildDescriptor.entityViewsToBuild;
             var count                        = entityViewsToBuild.Length;
 
@@ -214,6 +213,7 @@ namespace Svelto.ECS.Internal
         }
 #endif
         static readonly Dictionary<Type, Type[]> _cachedTypes = new Dictionary<Type, Type[]>();
+        static readonly Type _entityInfoView = typeof(EntityInfoView);
 
         const string DUPLICATE_IMPLEMENTOR_ERROR =
             "<color=orange>Svelto.ECS</color> the same component is implemented with more than one implementor. This is considered an error and MUST be fixed. ";
