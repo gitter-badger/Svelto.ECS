@@ -2,7 +2,7 @@ using Svelto.ECS.Internal;
 
 namespace Svelto.ECS
 {
-    public abstract class SingleEntityViewEngine<T> : IHandleEntityViewEngine where T : EntityView, new()
+    public abstract class SingleEntityViewEngine<T> : IHandleEntityViewEngine where T : class, IEntityView
     {
         public void Add(IEntityView entityView)
         {

@@ -138,18 +138,23 @@ namespace Svelto.ECS
             for (var index = 0; index < count; index++)
             {
                 var entityViewBuilder = entityViewsToBuild[index];
-                var entityViewType    = entityViewBuilder.GetEntityViewType();
+                var entityViewTypes    = entityViewBuilder.GetEntityViewType();
 
-                ITypeSafeList dbList;
-                if (_entityViewsDB.TryGetValue(entityViewType, out dbList) == false)
-                    _entityViewsDB[entityViewType] = entityViewBuilder.Preallocate(ref dbList, size);
-                else
-                    dbList.ReserveCapacity(size);
+                for (int i = 0; i < entityViewTypes.Length; i++)
+                {
+                    var entityViewType = entityViewTypes[i];
+                    
+                    ITypeSafeList dbList;
+                    if (_entityViewsDB.TryGetValue(entityViewType, out dbList) == false)
+                        _entityViewsDB[entityViewType] = entityViewBuilder.Preallocate(ref dbList, size);
+                    else
+                        dbList.ReserveCapacity(size);
 
-                if (_entityViewsToAdd.current.TryGetValue(entityViewType, out dbList) == false)
-                    _entityViewsToAdd.current[entityViewType] = entityViewBuilder.Preallocate(ref dbList, size);
-                else
-                    dbList.ReserveCapacity(size);
+                    if (_entityViewsToAdd.current.TryGetValue(entityViewType, out dbList) == false)
+                        _entityViewsToAdd.current[entityViewType] = entityViewBuilder.Preallocate(ref dbList, size);
+                    else
+                        dbList.ReserveCapacity(size);
+                }
             }
         }
 
@@ -242,17 +247,22 @@ namespace Svelto.ECS
             for (var i = 0; i < entityViewBuildersCount; i++)
             {
                 var entityViewBuilder = entityViewBuilders[i];
-                var entityViewType    = entityViewBuilder.GetEntityViewType();
+                var entityViewTypes    = entityViewBuilder.GetEntityViewType();
 
-                var           fromSafeList = groupedEntities[entityViewType];
-                ITypeSafeList toSafeList;
+                for (int j = 0; j < entityViewTypes.Length; j++)
+                {
+                    var entityViewType = entityViewTypes[j];
 
-                if (groupedEntityViewsTyped.TryGetValue(entityViewType, out toSafeList) == false)
-                    groupedEntityViewsTyped[entityViewType] = toSafeList = fromSafeList.Create();
+                    var           fromSafeList = groupedEntities[entityViewType];
+                    ITypeSafeList toSafeList;
 
-                entityViewBuilder.MoveEntityView(entityID, fromSafeList, toSafeList);
+                    if (groupedEntityViewsTyped.TryGetValue(entityViewType, out toSafeList) == false)
+                        groupedEntityViewsTyped[entityViewType] = toSafeList = fromSafeList.Create();
 
-                fromSafeList.MappedRemove(entityID);
+                    entityViewBuilder.MoveEntityView(entityID, fromSafeList, toSafeList);
+
+                    fromSafeList.MappedRemove(entityID);
+                }
             }
 
             var entityInfoView = _DB.QueryEntityView<EntityInfoView>(entityID);
@@ -267,9 +277,13 @@ namespace Svelto.ECS
 
             for (var i = 0; i < entityViewBuildersCount; i++)
             {
-                var entityViewType = entityViewBuilders[i].GetEntityViewType();
+                var entityViewTypes = entityViewBuilders[i].GetEntityViewType();
 
-                InternalRemoveEntityViewFromDBAndEngines(entityViewsDB, entityViewsDBDic, entityViewType, entityID);
+                for (int j = 0; j < entityViewTypes.Length; j++)
+                {
+                    var entityViewType = entityViewTypes[j];
+                    InternalRemoveEntityViewFromDBAndEngines(entityViewsDB, entityViewsDBDic, entityViewType, entityID);
+                }
             }
             
             InternalRemoveEntityViewFromDBAndEngines(entityViewsDB, entityViewsDBDic, typeof(EntityInfoView), entityID);
@@ -293,10 +307,15 @@ namespace Svelto.ECS
 
             for (var i = 0; i < entityViewBuildersCount; i++)
             {
-                var entityViewType = entityViewBuilders[i].GetEntityViewType();
+                var entityViewTypes = entityViewBuilders[i].GetEntityViewType();
 
-                var typeSafeList = dictionary[entityViewType];
-                typeSafeList.MappedRemove(entityID);
+                for (int j = 0; j < entityViewTypes.Length; j++)
+                {
+                    var entityViewType = entityViewTypes[j];
+
+                    var typeSafeList = dictionary[entityViewType];
+                    typeSafeList.MappedRemove(entityID);
+                }
             }
         }
 

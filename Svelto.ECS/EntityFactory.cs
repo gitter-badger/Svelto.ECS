@@ -74,15 +74,20 @@ namespace Svelto.ECS.Internal
             for (var index = 0; index < count; index++)
             {
                 var entityViewBuilder = entityViewsToBuild[index];
-                var entityViewType    = entityViewBuilder.GetEntityViewType();
+                var entityViewTypes    = entityViewBuilder.GetEntityViewType();
 
-                var entityViewObjectToFill =
-                    BuildEntityView(entityID, entityViewsByType, entityViewType, entityViewBuilder);
+                for (int i = 0; i < entityViewTypes.Length; i++)
+                {
+                    var entityViewType = entityViewTypes[i];
 
-                if (entityViewBuilder.mustBeFilled)
-                    FillEntityView(entityViewObjectToFill as EntityView
-                                 , implementors
-                                 , entityViewsToBuildDescriptor.name);
+                    var entityViewObjectToFill =
+                        BuildEntityView(entityID, entityViewsByType, entityViewType, entityViewBuilder);
+
+                    if (entityViewBuilder.mustBeFilled)
+                        FillEntityView(entityViewObjectToFill as EntityView
+                                     , implementors
+                                     , entityViewsToBuildDescriptor.name);
+                }
             }
         }
 

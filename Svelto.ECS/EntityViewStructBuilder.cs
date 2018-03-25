@@ -3,26 +3,27 @@ using Svelto.ECS.Internal;
 
 namespace Svelto.ECS
 {
-    public class EntityViewBuilder<EntityViewType> : IEntityViewBuilder where EntityViewType : EntityView, new()
+    public class EntityViewStructBuilder<EntityViewType> : IEntityViewBuilder where EntityViewType : struct, IEntityStruct
     {
         public void BuildEntityViewAndAddToList(ref ITypeSafeList list, int entityID, out IEntityView entityView)
         {
+            var structEntityView = default(EntityViewType);
+            structEntityView.ID = entityID;
+            
             if (list == null)
-                list = new TypeSafeFasterListForECSForClasses<EntityViewType>();
+                list = new TypeSafeFasterListForECSForStructs<EntityViewType>();
 
-            var castedList = list as TypeSafeFasterListForECSForClasses<EntityViewType>;
+            var castedList = list as TypeSafeFasterListForECSForStructs<EntityViewType>;
 
-            var lentityView = EntityView<EntityViewType>.BuildEntityView(entityID);
+            castedList.Add(structEntityView);
 
-            castedList.Add(lentityView);
-
-            entityView = lentityView;
+            entityView = null;
         }
 
         public ITypeSafeList Preallocate(ref ITypeSafeList list, int size)
         {
             if (list == null)
-                list = new TypeSafeFasterListForECSForClasses<EntityViewType>(size);
+                list = new TypeSafeFasterListForECSForStructs<EntityViewType>(size);
             else
                 list.ReserveCapacity(size);
 
@@ -36,15 +37,15 @@ namespace Svelto.ECS
 
         public void MoveEntityView(int entityID, ITypeSafeList fromSafeList, ITypeSafeList toSafeList)
         {
-            var fromCastedList = fromSafeList as TypeSafeFasterListForECSForClasses<EntityViewType>;
-            var toCastedList = toSafeList as TypeSafeFasterListForECSForClasses<EntityViewType>;
+            var fromCastedList = fromSafeList as TypeSafeFasterListForECSForStructs<EntityViewType>;
+            var toCastedList   = toSafeList as TypeSafeFasterListForECSForStructs<EntityViewType>;
 
             toCastedList.Add(fromCastedList[fromCastedList.GetIndexFromID(entityID)]);
         }
 
         public bool mustBeFilled
         {
-            get { return true; }
+            get { return false; }
         }
 
         readonly Type[] _entityViewType = {typeof(EntityViewType)};

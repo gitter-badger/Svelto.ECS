@@ -115,7 +115,7 @@ namespace Svelto.ECS.Internal
         }
     }
 
-    class TypeSafeFasterListForECSForClasses<T> : TypeSafeFasterListForECS<T>, ITypeSafeList where T : EntityView, new()
+    class TypeSafeFasterListForECSForClasses<T> : TypeSafeFasterListForECS<T>, ITypeSafeList where T : class, IEntityView
     {
         public TypeSafeFasterListForECSForClasses(int size) : base(size)
         {
