@@ -54,7 +54,13 @@ namespace Svelto.ECS
         void BuildEntity<T>(int entityID, object[] implementors = null) where T : IEntityDescriptor, new()
         {
             EntityFactory.BuildEntityViews
-                (entityID, _entityViewsToAdd.current, EntityDescriptorTemplate<T>.Default, implementors);
+                (_DB.GetMappedID(entityID), _entityViewsToAdd.current, EntityDescriptorTemplate<T>.Default, implementors);
+        }
+        
+        void BuildEntity<T>(object[] implementors = null) where T : IEntityDescriptor, new()
+        {
+            EntityFactory.BuildEntityViews
+                (_DB.GetUniqueID(), _entityViewsToAdd.current, EntityDescriptorTemplate<T>.Default, implementors);
         }
 
         /// <summary>
@@ -67,7 +73,13 @@ namespace Svelto.ECS
         void BuildEntity(int entityID, IEntityDescriptorInfo entityDescriptor, object[] implementors)
         {
             EntityFactory.BuildEntityViews
-                (entityID, _entityViewsToAdd.current, entityDescriptor, implementors);
+                (_DB.GetMappedID(entityID), _entityViewsToAdd.current, entityDescriptor, implementors);
+        }
+        
+        void BuildEntity(IEntityDescriptorInfo entityDescriptor, object[] implementors)
+        {
+            EntityFactory.BuildEntityViews
+                (_DB.GetUniqueID(), _entityViewsToAdd.current, entityDescriptor, implementors);
         }
 
         /// <summary>
@@ -97,10 +109,16 @@ namespace Svelto.ECS
         /// <param name="implementors"></param>
         void BuildMetaEntity<T>(int metaEntityID, object[] implementors) where T : IEntityDescriptor, new()
         {
-            EntityFactory.BuildEntityViews(metaEntityID, _metaEntityViewsToAdd.current,
+            EntityFactory.BuildEntityViews(_DB.GetMetaMappedID(metaEntityID), _metaEntityViewsToAdd.current,
                                            EntityDescriptorTemplate<T>.Default, implementors);
         }
-
+        
+        void BuildMetaEntity<T>(object[] implementors) where T : IEntityDescriptor, new()
+        {
+            EntityFactory.BuildEntityViews(_DB.GetMetaUniqueID(), _metaEntityViewsToAdd.current,
+                                           EntityDescriptorTemplate<T>.Default, implementors);
+        }
+        
         /// <summary>
         ///     Using this function is like building a normal entity, but the entityViews
         ///     are grouped by groupID to be more efficently processed inside engines and
@@ -114,7 +132,7 @@ namespace Svelto.ECS
         void BuildEntityInGroup<T>(int entityID, int groupID, object[] implementors = null)
             where T : IEntityDescriptor, new()
         {
-            EntityFactory.BuildGroupedEntityViews(entityID, groupID,
+            EntityFactory.BuildGroupedEntityViews(_DB.GetMappedID(entityID), groupID,
                                                   _groupedEntityViewsToAdd.current,
                                                   _entityViewsToAdd.current,
                                                   EntityDescriptorTemplate<T>.Default,
@@ -124,7 +142,28 @@ namespace Svelto.ECS
         void BuildEntityInGroup(int      entityID, int groupID, IEntityDescriptorInfo entityDescriptor,
                                 object[] implementors = null)
         {
-            EntityFactory.BuildGroupedEntityViews(entityID, groupID,
+            EntityFactory.BuildGroupedEntityViews(_DB.GetMappedID(entityID), groupID,
+                                                  _groupedEntityViewsToAdd.current,
+                                                  _entityViewsToAdd.current,
+                                                  entityDescriptor, implementors);
+        }
+        
+        void BuildEntityInGroup<T>(int groupID, object[] implementors = null)
+            where T : IEntityDescriptor, new()
+        {
+            EntityFactory.BuildGroupedEntityViews(_DB.GetUniqueID(), groupID,
+                                                  _groupedEntityViewsToAdd.current,
+                                                  _entityViewsToAdd.current,
+                                                  EntityDescriptorTemplate<T>.Default,
+                                                  implementors);
+        }
+
+        void BuildEntityInGroup(int groupID, IEntityDescriptorInfo entityDescriptor,
+                                object[] implementors = null)
+        {
+            
+            
+            EntityFactory.BuildGroupedEntityViews(_DB.GetUniqueID(), groupID,
                                                   _groupedEntityViewsToAdd.current,
                                                   _entityViewsToAdd.current,
                                                   entityDescriptor, implementors);
@@ -357,6 +396,33 @@ namespace Svelto.ECS
             {
                 _weakEngine.Target.BuildEntityInGroup(entityID, groupID, entityDescriptor, implementors);
             }
+            
+            public void BuildEntity<T>(object[] implementors) where T : IEntityDescriptor, new()
+            {
+                _weakEngine.Target.BuildEntity<T>(implementors);
+            }
+
+            public void BuildEntity(IEntityDescriptorInfo entityDescriptor, object[] implementors = null)
+            {
+                _weakEngine.Target.BuildEntity(entityDescriptor, implementors);
+            }
+
+            public void BuildMetaEntity<T>(object[] implementors) where T : IEntityDescriptor, new()
+            {
+                _weakEngine.Target.BuildMetaEntity<T>(implementors);
+            }
+
+            public void BuildEntityInGroup<T>(int groupID, object[] implementors)
+                where T : IEntityDescriptor, new()
+            {
+                _weakEngine.Target.BuildEntityInGroup<T>(groupID, implementors);
+            }
+
+            public void BuildEntityInGroup(int groupID, IEntityDescriptorInfo entityDescriptor,
+                                           object[] implementors)
+            {
+                _weakEngine.Target.BuildEntityInGroup(groupID, entityDescriptor, implementors);
+            }
 
             public void PreallocateEntitySlots<T>(int size) where T : IEntityDescriptor, new()
             {
@@ -402,6 +468,5 @@ namespace Svelto.ECS
         readonly Dictionary<int, Dictionary<Type, ITypeSafeList>> _groupEntityViewsDB;
         readonly Dictionary<Type, ITypeSafeList>                  _metaEntityViewsDB;
         readonly Dictionary<Type, ITypeSafeDictionary>            _metaEntityViewsDBDic;
-
     }
 }

@@ -19,6 +19,8 @@ namespace Svelto.ECS.Internal
             _metaEntityViewsDBdic = metaEntityViewsDBdic;
             
             _groupEntityViewsDB = groupEntityViewsDB;
+            _mappedID = new Dictionary<int, int>();
+            _metaMappedID = new Dictionary<int, int>();
         }
 
         public FasterReadOnlyList<T> QueryEntityViews<T>() where T:EntityView
@@ -103,22 +105,22 @@ namespace Svelto.ECS.Internal
         
         public T QueryEntityView<T>(int entityID) where T:EntityView
         {
-            return QueryEntityView<T>(entityID, _entityViewsDBdic);
+            return QueryEntityView<T>(_mappedID[entityID], _entityViewsDBdic);
         }
 
         public bool TryQueryEntityView<T>(int entityID, out T entityView) where T:EntityView
         {
-            return TryQueryEntityView(entityID, _entityViewsDBdic, out entityView);
+            return TryQueryEntityView(_mappedID[entityID], _entityViewsDBdic, out entityView);
         }
 
         public T QueryMetaEntityView<T>(int metaEntityID) where T:EntityView
         {
-            return QueryEntityView<T>(metaEntityID, _metaEntityViewsDBdic);
+            return QueryEntityView<T>(_metaMappedID[metaEntityID], _metaEntityViewsDBdic);
         }
 
         public bool TryQueryMetaEntityView<T>(int metaEntityID, out T entityView) where T:EntityView
         {
-            return TryQueryEntityView(metaEntityID, _metaEntityViewsDBdic, out entityView);
+            return TryQueryEntityView(_metaMappedID[metaEntityID], _metaEntityViewsDBdic, out entityView);
         }
 
         public FasterReadOnlyList<T> QueryMetaEntityViews<T>() where T:EntityView
@@ -192,5 +194,48 @@ namespace Svelto.ECS.Internal
         readonly Dictionary<Type, ITypeSafeDictionary>   _metaEntityViewsDBdic;
         
         readonly Dictionary<int, Dictionary<Type, ITypeSafeList>> _groupEntityViewsDB;
+        
+        int                  _uniqueID;
+        int                  _metaUniqueID;
+        readonly Dictionary<int, int> _mappedID;
+        readonly Dictionary<int, int> _metaMappedID;
+
+        public int GetMappedID(int entityId)
+        {
+            int realId;
+            if (_mappedID.TryGetValue(entityId, out realId) == false)
+            {
+                realId = GetUniqueID();
+                _mappedID[entityId] = realId;
+            }
+
+            return realId;
+        }
+
+        public int GetUniqueID()
+        {
+            ++_uniqueID;
+            _mappedID[_uniqueID] = _uniqueID;
+            return _uniqueID;
+        }
+
+        public int GetMetaUniqueID()
+        {
+            ++_metaUniqueID;
+            _metaMappedID[_metaUniqueID] = _metaUniqueID;
+            return _metaUniqueID;
+        }
+
+        public int GetMetaMappedID(int metaEntityId)
+        {
+            int realId;
+            if (_metaMappedID.TryGetValue(metaEntityId, out realId) == false)
+            {
+                realId              = GetMetaUniqueID();
+                _metaMappedID[metaEntityId] = realId;
+            }
+
+            return realId;
+        }
     }
 }

@@ -15,7 +15,7 @@ namespace Svelto.ECS
         ReadOnlyDictionary<int, T> QueryIndexableMetaEntityViews<T>() where T : EntityView;
 
         bool TryQueryEntityView<T>(int ID, out T entityView) where T : EntityView;
-        T    QueryEntityView<T>(int    ID) where T : EntityView;
+        T    QueryEntityView<T>(int ID) where T : EntityView;
 
         bool TryQueryMetaEntityView<T>(int metaEntityID, out T entityView) where T : EntityView;
         T    QueryMetaEntityView<T>(int    metaEntityID) where T : EntityView;
